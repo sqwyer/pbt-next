@@ -1,15 +1,27 @@
-generator client {
-    provider = "prisma-client-js"
-}
+// generator client {
+//     provider = "prisma-client-js"
+// }
 
 datasource db {
     provider = "mongodb"
     url      = env("DATABASE_URL")
 }
 
+// datasource db {
+//   provider          = "postgresql"
+//   url               = env("DATABASE_URL")
+//   directUrl         = env("DIRECT_URL")
+// }
+
+generator client {
+  provider = "prisma-client-js"
+}
+
 model Account {
     id                String  @id @default(auto()) @map("_id") @db.ObjectId
+    // id                Int     @id @default(autoincrement())
     userId            String  @db.ObjectId
+    // userId            Int
     type              String
     provider          String
     providerAccountId String
@@ -27,8 +39,10 @@ model Account {
 
 model Session {
     id           String   @id @default(auto()) @map("_id") @db.ObjectId
+    // id           Int      @id @default(autoincrement())
     sessionToken String   @unique
     userId       String   @db.ObjectId
+    // userId       Int      
     expires      DateTime
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -36,7 +50,9 @@ model Session {
 model TutoringSession {
     createdAt DateTime @default(now())
     id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    // id        Int      @id @default(autoincrement())
     userId    String?  @db.ObjectId
+    // userId    Int?
     label     String
     date      String
     time      String
@@ -47,6 +63,7 @@ model TutoringSession {
 
 model User {
     id               String             @id @default(auto()) @map("_id") @db.ObjectId
+    // id               Int                @id @default(autoincrement())
     name             String?
     email            String?            @unique
     emailVerified    DateTime?
@@ -58,6 +75,7 @@ model User {
 
 model VerificationToken {
     id         String   @id @default(auto()) @map("_id") @db.ObjectId
+    // id         Int      @id @default(autoincrement())
     identifier String
     token      String   @unique
     expires    DateTime

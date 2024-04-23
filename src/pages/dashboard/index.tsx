@@ -1,7 +1,7 @@
 import { Session } from "next-auth";
 import { signOut, useSession } from "next-auth/react";
 import Head from "next/head";
-import { useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { Footer } from "~/components/Footer";
 import { Nav } from "~/components/Nav";
 import Image from "next/image";
@@ -9,6 +9,8 @@ import Image from "next/image";
 import { isAdmin } from "~/utils/isAdmin";
 import { api } from "~/utils/api";
 import { TutoringSession } from "@prisma/client";
+import Link from "next/link";
+import { Input } from "~/components/Input";
 
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -66,10 +68,10 @@ function AdminSession({session}: {session: TutoringSession}) {
             </p>
         </div>
         </div>
-        <button className="sm:ml-auto justify-center sm:justify-normal text-xs 2xl:text-base px-2 2xl:px-4 md:px-8 py-3 sm:py-4 bg-red-600 font-semibold text-white flex flex-row items-center gap-2 rounded-b-lg sm:rounded-bl-none sm:rounded-r-lg hover:gap-4 duration-100 shadow-lg sm:shadow-none">
+        <Link href={`/dashboard/session/${session.id}`} className="sm:ml-auto justify-center sm:justify-normal text-xs 2xl:text-base px-2 2xl:px-4 md:px-8 py-3 sm:py-4 bg-red-600 font-semibold text-white flex flex-row items-center gap-2 rounded-b-lg sm:rounded-bl-none sm:rounded-r-lg hover:gap-4 duration-100 shadow-lg sm:shadow-none">
             <span>Edit</span>
             <Image src="/chevron-right.svg" alt="&gt;" height={16} width={16} />
-        </button>
+        </Link>
     </div>
 }
 
@@ -86,7 +88,6 @@ function AdminDashboard({session}: {session: Session|null}) {
     const [createTime, setCreateTime] = useState("5-7:00pm")
 
     const createMutation = api.session.create.useMutation()
-    const deleteMutation = api.session.delete.useMutation()
     const {data: sessions} = api.session.list.useQuery()
 
 
@@ -106,42 +107,36 @@ function AdminDashboard({session}: {session: Session|null}) {
         setCreateOpen(false)
     }
 
-    const deleteSession = (id: string) => {
-        deleteMutation.mutate({
-            id
-        })
-    }
-
     return <>
         <div>
             <h1 className="text-white font-semibold text-2xl">Admin Dashboard</h1>
             <p className="text-white text-sm">You are currently signed in as {session?.user.email} - <a className="underline cursor-pointer" onClick={() => signOut()}>Sign Out</a></p>
         </div>
         <div className="bg-blue-900 rounded-lg overflow-hidden flex flex-col">
-            <div className="flex flex-row px-4 py-2 rounded-t-lg items-center cursor-pointer" onClick={() => setCreateOpen(!isCreateOpen)}>
+            <div className="flex flex-row p-4 rounded-t-lg items-center cursor-pointer" onClick={() => setCreateOpen(!isCreateOpen)}>
                 <p className="text-white font-semibold">Create a new session</p>
                 {isCreateOpen
                     ? <Image src="/chevron-up.svg" alt="Open" className="h-4 ml-auto" height={16} width={16} />
                     : <Image src="/chevron-down.svg" alt="Open" className="h-4 ml-auto" height={16} width={16} />
                 }
             </div>
-            {isCreateOpen && <div className="px-4 pb-2 rounded-b-lg flex flex-col gap-2">
-                <input placeholder="Label" className="rounded-md p-2" value={createLabel} onChange={(event) => setCreateLabel(event.target.value)} />
-                <input placeholder="Location" className="rounded-md p-2" value={createLocation} onChange={(event) => setCreateLocation(event.target.value)} />
-                <input placeholder="Date (Apr 7)" className="rounded-md p-2" value={createDate} onChange={(event) => setCreateDate(event.target.value)} />
-                <input placeholder="Time (5-7:00pm)" className="rounded-md p-2" value={createTime} onChange={(event) => setCreateTime(event.target.value)} />
+            {isCreateOpen && <div className="px-4 pb-4 rounded-b-lg flex flex-col gap-2">
+                <Input placeholder="Label (Math Tutoring - One on One)" value={createLabel} onChange={(event: ChangeEvent<HTMLInputElement>) => setCreateLabel(event.target.value)} />
+                <Input placeholder="Location (2801 Orange St NLR)" value={createLocation} onChange={(event: ChangeEvent<HTMLInputElement>) => setCreateLocation(event.target.value)} />
+                <Input placeholder={`Date (${month} ${date.getDate()})`} value={createDate} onChange={(event: ChangeEvent<HTMLInputElement>) => setCreateDate(event.target.value)} />
+                <Input placeholder="Time (5-7:00pm)" value={createTime} onChange={(event: ChangeEvent<HTMLInputElement>) => setCreateTime(event.target.value)} />
                 <button className="bg-red-600 text-white cursor-pointer rounded-lg font-semibold px-4 py-2" onClick={() => createSession()}>Create Session</button>
             </div>}
         </div>
         <div className="bg-blue-900 rounded-lg overflow-hidden flex flex-col">
-            <div className="flex flex-row px-4 py-2 rounded-t-lg items-center cursor-pointer" onClick={() => setListOpen(!isListOpen)}>
+            <div className="flex flex-row p-4 rounded-t-lg items-center cursor-pointer" onClick={() => setListOpen(!isListOpen)}>
                 <p className="text-white font-semibold">Sessions List</p>
                 {isListOpen
                     ? <Image src="/chevron-up.svg" alt="Open" className="h-4 ml-auto" height={16} width={16} />
                     : <Image src="/chevron-down.svg" alt="Open" className="h-4 ml-auto" height={16} width={16} />
                 }
             </div>
-            {isListOpen && <div className="px-4 pb-2 rounded-b-lg flex flex-col gap-2">
+            {isListOpen && <div className="px-4 pb-4 rounded-b-lg flex flex-col gap-2">
                 {sessions?.map((sess) =>
                     <AdminSession session={sess} key={sess.id}/>
                 )}

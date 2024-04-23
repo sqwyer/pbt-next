@@ -16,6 +16,38 @@ export const sessionRouter = createTRPCRouter({
       })
     }),
 
+    find: publicProcedure
+      .input(z.object({
+        id: z.string()
+      }))
+      .query(({ctx, input}) => {
+        return ctx.db.tutoringSession.findUnique({
+          where: {
+            id: input.id
+          }
+        })
+      }),
+
+    update: adminProcedure
+      .input(z.object({
+        id: z.string(),
+        data: z.object({
+          label: z.string().optional(),
+          location: z.string().optional(),
+          date: z.string().optional(),
+          time: z.string().optional(),
+          booked: z.boolean().optional()
+        })
+      }))
+      .mutation(({ctx, input}) => {
+        return ctx.db.tutoringSession.update({
+          where: {
+            id: input.id
+          },
+          data: input.data
+        })
+      }),
+
   create: adminProcedure
     .input(z.object({
         label: z.string(),
@@ -37,6 +69,7 @@ export const sessionRouter = createTRPCRouter({
 
     delete: adminProcedure
         .input(z.object({
+            // id: z.number()
             id: z.string()
         }))
         .mutation(async ({ ctx, input }) => {
