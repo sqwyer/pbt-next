@@ -94,7 +94,7 @@ function SessionForm({session}: SessionFormProps) {
             <p className="text-white">Booked</p>
             <CheckboxInput checked={booked} onChange={(event: ChangeEvent<HTMLInputElement>) => setBooked(event.target.checked)} />
         </div>
-        <button className="bg-red-600 text-white cursor-pointer rounded-lg font-semibold px-4 py-2" onClick={() => updateSession(session?.id as string)}>Update Session</button>
+        <button className="bg-red-600 text-white cursor-pointer rounded-lg font-semibold px-4 py-2" onClick={() => updateSession(session?.id)}>Update Session</button>
         <p className="text-red-400 underline text-sm cursor-pointer">Delete this session (you cannot undo this action)</p>
     </div>
 }
