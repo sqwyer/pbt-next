@@ -163,7 +163,7 @@ export default function SessionEditor() {
 
 interface SessionFormProps extends HTMLProps<HTMLDivElement> {
   session: TutoringSession;
-  openModal: () => any;
+  openModal: () => void;
 }
 
 function SessionForm({ session, openModal }: SessionFormProps) {
