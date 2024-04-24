@@ -42,7 +42,7 @@ export default function Dashboard() {
       <main className="relative flex min-h-screen flex-col justify-between gap-0 bg-blue-800">
         <div>
           <Nav />
-          <div className="flex flex-col gap-8 px-8 py-16 sm:p-16 xl:px-32 2xl:p-32">
+          <div className="flex flex-col gap-8 px-8 py-16 sm:p-16 xl:px-32">
             {status === "loading" ? (
               <h1>Loading...</h1>
             ) : !isAdmin(session?.user.email) ? (

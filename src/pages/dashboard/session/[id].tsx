@@ -10,6 +10,7 @@ import { isAdmin } from "~/utils/isAdmin";
 import Link from "next/link";
 import { CheckboxInput } from "~/components/CheckboxInput";
 import { TutoringSession } from "@prisma/client";
+import Image from "next/image";
 
 const months = [
   "Jan",
@@ -28,6 +29,7 @@ const months = [
 
 export default function SessionEditor() {
   const router = useRouter();
+  const [modalOpen, setModalOpen] = useState(false);
 
   const { data: userSession, status: userStatus } = useSession();
   const { data: session, status } = api.session.find.useQuery({
@@ -41,6 +43,15 @@ export default function SessionEditor() {
     }
   }, []);
 
+  const deleteMutation = api.session.delete.useMutation();
+
+  const deleteSession = () => {
+    deleteMutation.mutate({
+      id: session?.id as string,
+    });
+    window.open("/dashboard", "_self");
+  };
+
   return (
     <>
       <Head>
@@ -51,7 +62,7 @@ export default function SessionEditor() {
       <main className="relative flex min-h-screen flex-col justify-between gap-0 bg-blue-800">
         <div>
           <Nav />
-          <div className="flex flex-col gap-8 px-8 py-16 sm:p-16 xl:px-32 2xl:p-32">
+          <div className="flex flex-col gap-8 px-8 py-16 sm:p-16 xl:px-32">
             {status === "pending" && <p className="text-white">Loading...</p>}
             {status === "error" && (
               <div className="flex flex-col gap-2 text-white">
@@ -65,28 +76,94 @@ export default function SessionEditor() {
               </div>
             )}
             {status === "success" && (
-              <div className="flex flex-col gap-4 rounded-lg bg-blue-900 p-4">
-                <div>
-                  <p className="text-lg font-semibold text-white">
-                    Currently editing session &quot;{session?.label}&quot;
-                  </p>
-                  <p className="text-xs text-white">({session?.id})</p>
+              <>
+                <Link href="/dashboard" className="flex flex-row gap-1">
+                  <Image
+                    src="/chevron-left.svg"
+                    className="cursor-pointer"
+                    height={16}
+                    width={16}
+                    alt="&lt;"
+                  />
+                  <span className="text-white underline">
+                    Back to dashboard
+                  </span>
+                </Link>
+                <div className="flex flex-col gap-4 rounded-lg bg-blue-900 p-4">
+                  <div>
+                    <p className="text-lg font-semibold text-white">
+                      Currently editing session &quot;{session?.label}&quot;
+                    </p>
+                    <p className="text-xs text-white">({session?.id})</p>
+                  </div>
+                  <SessionForm
+                    session={session as TutoringSession}
+                    openModal={() => setModalOpen(true)}
+                  />
                 </div>
-                <SessionForm session={session as TutoringSession} />
-              </div>
+              </>
             )}
           </div>
         </div>
       </main>
+      <div
+        className={`modal-bg fixed bottom-0 left-0 right-0 top-0 z-[99] flex items-center justify-center bg-black bg-opacity-50 p-8 sm:px-16 ${!modalOpen && "hidden"}`}
+        onClick={(event) =>
+          setModalOpen(
+            !(event.target as HTMLDivElement).classList.contains("modal-bg"),
+          )
+        }
+      >
+        <div className="modal z-[98] flex w-full flex-col rounded-[10px] bg-white sm:w-96">
+          <div className="flex flex-col gap-4 rounded-t-lg border-2 border-b-0 border-gray-400 p-4 text-sm">
+            <p>Are you sure you want to delete this session?</p>
+            <div className="flex flex-col gap-1">
+              <p>
+                • Labeled as <span className="font-bold">{session?.label}</span>
+              </p>
+              <p>
+                • Located as{" "}
+                <span className="font-bold">{session?.location}</span>
+              </p>
+              <p>
+                • Scheduled for{" "}
+                <span className="font-bold">{session?.date}</span> at{" "}
+                <span className="font-bold">{session?.time}</span>
+              </p>
+            </div>
+            <p>
+              This action is <span className="font-bold">NOT</span> able to be
+              undone.
+            </p>
+            {session?.booked && (
+              <div className="flex flex-row gap-1 font-bold text-yellow-500">
+                <Image src="/warning.svg" height={14} width={14} alt="/!\" />
+                <p>This session is marked as booked.</p>
+              </div>
+            )}
+            {/* NOTE: this button uses modal-bg className to trigger the close event onClick from the true modal-bg */}
+            <button className="modal-bg cursor-pointer rounded-sm bg-gray-100 px-2 py-1 underline hover:bg-gray-200">
+              Cancel deletion
+            </button>
+          </div>
+          <button
+            className="rounded-b-lg border-2 border-red-600 bg-red-100 px-4 py-2 font-semibold text-red-600 duration-75 hover:bg-red-300"
+            onClick={() => deleteSession()}
+          >
+            Yes, delete this session.
+          </button>
+        </div>
+      </div>
     </>
   );
 }
 
 interface SessionFormProps extends HTMLProps<HTMLDivElement> {
   session: TutoringSession;
+  openModal: () => any;
 }
 
-function SessionForm({ session }: SessionFormProps) {
+function SessionForm({ session, openModal }: SessionFormProps) {
   const d = new Date();
   const month = months[d.getMonth()];
 
@@ -161,7 +238,10 @@ function SessionForm({ session }: SessionFormProps) {
       >
         Update Session
       </button>
-      <p className="cursor-pointer text-sm text-red-400 underline">
+      <p
+        className="cursor-pointer text-sm text-red-400 underline"
+        onClick={() => openModal()}
+      >
         Delete this session (you cannot undo this action)
       </p>
     </div>
